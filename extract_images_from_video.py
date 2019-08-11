@@ -1,9 +1,9 @@
 import os
 import cv2
 
-# Load the haar cascade to detect the faces
-face_classifier = cv2.CascadeClassifier(
-    'cascades/haarcascade_frontalface_default.xml')
+VIDEO_DIR = 'videos'
+IMAGE_DIR = 'inputs'
+IMAGE_SIZE = (80, 80)
 
 
 def detect_faces(image):
@@ -21,32 +21,36 @@ def detect_faces(image):
         yield face
 
 
+# Load the haar cascade to detect the faces
+face_classifier = cv2.CascadeClassifier(
+    'cascades/haarcascade_frontalface_default.xml')
+
+
 # Read the video files from the videos directory
-VIDEO_DIR = 'videos'
 input_files = os.listdir(VIDEO_DIR)
 input_files.remove('help.txt')
-
-IMAGE_DIR = 'inputs'
 
 if not len(input_files):
     print('No videos in video directory. Please add some files')
     exit()
+
 for file_count, input_file in enumerate(input_files):
     cap = cv2.VideoCapture(os.path.join(VIDEO_DIR, input_file))
     frame_count = 0
     print(input_file)
     while True:
-        _, frame = cap.read()
+		_, frame = cap.read()
+		if frame is None:
+            print('END')
+            break
         if frame_count % 5 == 0:
             images = detect_faces(frame)
             for i, image in enumerate(images):
-                resized = cv2.resize(image, (81, 81))
+                resized = cv2.resize(image, IMAGE_SIZE)
                 file = os.path.join(
                     IMAGE_DIR, f'{file_count}-{frame_count}-{i}.png')
                 cv2.imwrite(file, resized)
         frame_count += 1
-        if frame is None:
-            print('END')
-            break
+        
     cap.release()
     cv2.destroyAllWindows()
